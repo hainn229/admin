@@ -4,6 +4,8 @@ import { Dashboard } from "./Dashboard";
 import { Users } from "./Users";
 import { Categories } from "./Categories";
 import { Courses } from "./Courses";
+import { AddCourse } from "./AddCourse";
+import { AdminCourses } from "./AdminCourses";
 import { Comments } from "./Comments";
 
 export const Router = () => {
@@ -12,6 +14,8 @@ export const Router = () => {
       <Route exact={true} path="/" component={Dashboard} />
       <Route path="/users" component={Users} />
       <Route path="/categories" component={Categories} />
+      <Route path="/courses/add" component={AddCourse} />
+      <Route path="/courses/admin" component={AdminCourses} />
       <Route path="/courses" component={Courses} />
       <Route path="/comemnts" component={Comments} />
       {/* <Route path="/payments" component={Payments} /> */}

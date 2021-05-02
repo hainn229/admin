@@ -27,7 +27,6 @@ import {
   Select,
   Upload,
   Divider,
-  Popconfirm,
 } from "antd";
 import {
   BookOutlined,
@@ -47,7 +46,7 @@ const formStyle = {
   },
 };
 
-const CoursesComponent = () => {
+const AdminCoursesComponent = () => {
   const jwt = localStorage.getItem("token");
   // const [form] = Form.useForm();
   // const onReset = () => {
@@ -66,12 +65,15 @@ const CoursesComponent = () => {
   const getCourses = async () => {
     try {
       const keys = queryString.stringify(pagination);
-      const results = await axios.get(`http://localhost:4000/courses?${keys}`, {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
+      const results = await axios.get(
+        `http://localhost:4000/courses/admin?${keys}`,
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: "Bearer " + jwt,
+          },
+        }
+      );
       setListCourses(results.data.courses.docs);
     } catch (error) {
       if (error.response) {
@@ -151,73 +153,17 @@ const CoursesComponent = () => {
       }
     }
   };
-  const [actions, setActions] = useState(false);
-  const onBlock = async (id) => {
-    try {
-      const result = await axios.put(
-        `http://localhost:4000/courses/${id}`,
-        {
-          status: false,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      if (result.status === 200) {
-        setActions(!actions);
-        return message.success(result.data.message);
-      }
-    } catch (error) {
-      if (error.response) {
-        return message.error(`${error.response.data.message}`);
-      } else {
-        return message.error(`${error.message}`);
-      }
-    }
-  };
-  const onActive = async (id) => {
-    try {
-      const result = await axios.put(
-        `http://localhost:4000/courses/${id}`,
-        {
-          status: true,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      if (result.status === 200) {
-        setActions(!actions);
-        return message.success(result.data.message);
-      }
-    } catch (error) {
-      if (error.response) {
-        return message.error(`${error.response.data.message}`);
-      } else {
-        return message.error(`${error.message}`);
-      }
-    }
-  };
-
-  useEffect(() => {
-    getCategories();
-  }, [pagination]);
 
   useEffect(() => {
     getCourses();
-  }, [pagination, actions]);
+    getCategories();
+  }, [pagination]);
   return (
     <div className="site-page-header-ghost-wrapper">
       <PageHeader
         ghost={true}
         onBack={() => window.history.back()}
-        title="All Courses"
+        title="List Courses"
         extra={[
           <Search
             placeholder="Search course..."
@@ -233,116 +179,6 @@ const CoursesComponent = () => {
           />,
         ]}
       >
-        <div style={{ backgroundColor: "white", padding: 20 }}>
-          <Row>
-            <h6>Filter by Level:</h6>
-          </Row>
-          <Checkbox.Group
-            style={{ width: "100%" }}
-            onChange={(event) => {
-              setPagination({
-                ...pagination,
-                level: event,
-              });
-            }}
-          >
-            <Row>
-              <Col span={6}>
-                <Checkbox value="All levels">All levels</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="Beginning level">Beginning</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="Intermediate level">Intermediate</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="Advanced level">Advanced</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-          <Row>
-            <h6>Filter by Status:</h6>
-          </Row>
-          <Checkbox.Group
-            style={{ width: "100%" }}
-            onChange={(event) => {
-              setPagination({
-                ...pagination,
-                status: event,
-              });
-            }}
-          >
-            <Row>
-              <Col span={6}>
-                <Checkbox value={true}>Active</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value={false}>Pending</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-          <Row>
-            <h6>Filter by Price:</h6>
-          </Row>
-          <Slider
-            min={1}
-            max={1000}
-            onChange={(e) =>
-              setPagination({
-                ...pagination,
-                inputValue: e,
-              })
-            }
-            value={
-              typeof pagination.inputValue === "number"
-                ? pagination.inputValue
-                : 0
-            }
-          />
-          <InputNumber
-            min={1}
-            max={1000}
-            style={{ margin: "0 16px" }}
-            value={pagination.inputValue}
-            onChange={(e) =>
-              setPagination({
-                ...pagination,
-                inputValue: e,
-              })
-            }
-          />
-
-          <Row>
-            <h6>Filter by Tutor:</h6>
-          </Row>
-          <Checkbox.Group
-            style={{ width: "100%" }}
-            onChange={(event) => {
-              setPagination({
-                ...pagination,
-                level: event,
-              });
-            }}
-          >
-            <Row gutter>
-              <Col span={6}>
-                <Checkbox value="Ngọc Hải Nguyễn">Ngọc Hải Nguyễn</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="Ho My Ka">Ho My Ka</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="John Doe">John Doe</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="Nguyễn Ngọc Hải">Nguyễn Ngọc Hải</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-          <br />
-        </div>
-
         <div style={{ backgroundColor: "white", padding: 20 }}>
           <Table>
             <thead>
@@ -387,26 +223,15 @@ const CoursesComponent = () => {
                       <td>
                         <Space size="middle">
                           {i.status === true ? (
-                            <Popconfirm
-                              title="Are you sure to block this course?"
-                              onConfirm={() => onBlock(i._id)}
-                              okText="Yes"
-                              cancelText="No"
-                            >
-                              <Button type="primary" danger>
-                                Block
-                              </Button>
-                            </Popconfirm>
+                            <Button type="primary" danger>
+                              Block
+                            </Button>
                           ) : (
-                            <Popconfirm
-                              title="Are you sure to active this course?"
-                              onConfirm={() => onActive(i._id)}
-                              okText="Yes"
-                              cancelText="No"
-                            >
-                              <Button type="primary">Active</Button>
-                            </Popconfirm>
+                            <Button type="primary" onClick={() => {}}>
+                              Active
+                            </Button>
                           )}
+                          <Button onClick={() => {}}>Add Contents</Button>
                         </Space>
                       </td>
                     </tr>
@@ -548,4 +373,4 @@ const CoursesComponent = () => {
     </div>
   );
 };
-export default CoursesComponent;
+export default AdminCoursesComponent;

@@ -20,6 +20,7 @@ import { Router } from "./Router";
 import { useAuth } from "../hooks/useAuth";
 
 const { Header, Sider, Content } = Layout;
+const { SubMenu } = Menu;
 export const Index = () => {
   const request = useAuth();
   const user = useSelector((state) => {
@@ -74,9 +75,17 @@ export const Index = () => {
           <Menu.Item key="3" icon={<UnorderedListOutlined />}>
             <Link to={`/categories`}>Categories</Link>
           </Menu.Item>
-          <Menu.Item key="4" icon={<BookOutlined />}>
-            <Link to={`/courses`}>Courses</Link>
-          </Menu.Item>
+          <SubMenu key="4" icon={<BookOutlined />} title="Courses">
+            <Menu.Item key="s1">
+              <Link to={`/courses`}>All Courses</Link>
+            </Menu.Item>
+            <Menu.Item key="s2">
+              <Link to={`/courses/add`}>Add New Course</Link>
+            </Menu.Item>
+            <Menu.Item key="s3">
+              <Link to={`/courses/admin`}>My Courses</Link>
+            </Menu.Item>
+          </SubMenu>
           <Menu.Item key="5" icon={<LikeOutlined />}>
             <Link to={`/comments`}>Comments</Link>
           </Menu.Item>

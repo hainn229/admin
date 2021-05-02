@@ -6,12 +6,12 @@ import { Redirect } from "react-router-dom";
 import LoginComponent from "../components/login";
 
 export const Login = () => {
-  // useAuth();
-  // const user = useSelector((state) => {
-  //   return state.signInReducer.data;
-  // });
-  // if (user) {
-  //   return <Redirect to={`/`} />;
-  // }
+  useAuth();
+  const user = useSelector((state) => {
+    return state.signInReducer.data;
+  });
+  if (user) {
+    return <Redirect to={`/`} />;
+  }
   return <LoginComponent />;
 };
