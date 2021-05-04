@@ -5,7 +5,7 @@ import axios from "axios";
 import queryString from "querystring";
 import { Player, BigPlayButton } from "video-react";
 import "video-react/dist/video-react.css";
-import { Link, Redirect } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Tag,
   Space,
@@ -14,8 +14,6 @@ import {
   Button,
   Input,
   Checkbox,
-  Layout,
-  Menu,
   Slider,
   InputNumber,
   Row,
@@ -23,36 +21,14 @@ import {
   Avatar,
   Modal,
   List,
-  Form,
-  Select,
-  Upload,
-  Divider,
   Popconfirm,
 } from "antd";
-import {
-  BookOutlined,
-  UserOutlined,
-  UploadOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { BookOutlined, UserOutlined } from "@ant-design/icons";
 import { Table } from "react-bootstrap";
-const { Search, TextArea } = Input;
-const { Option } = Select;
-
-const formStyle = {
-  labelCol: { span: 4, style: { textAlign: "left" } },
-  wrapperCol: {
-    span: 20,
-    style: { marginLeft: 20, marginTop: 10, width: "100%" },
-  },
-};
+const { Search } = Input;
 
 const CoursesComponent = () => {
   const jwt = localStorage.getItem("token");
-  // const [form] = Form.useForm();
-  // const onReset = () => {
-  //   form.resetFields();
-  // };
   const [pagination, setPagination] = useState({
     currentPage: 1,
     limitPage: 10,

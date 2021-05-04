@@ -84,25 +84,6 @@ const AdminCoursesComponent = () => {
     }
   };
 
-  const [categoriesData, setCategoriesData] = useState([]);
-  const getCategories = async () => {
-    try {
-      const result = await axios.get(`http://localhost:4000/categories/all`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCategoriesData(result.data.categories);
-    } catch (error) {
-      if (error.response) {
-        return message.error(`${error.response.data.message}`);
-      } else {
-        return message.error(`${error.message}`);
-      }
-    }
-  };
-
   const [modalInfoVisible, setModalInfoVisible] = useState(false);
   const [courseInfo, setCourseInfo] = useState();
   const [contentOfCourse, setContentOfCourse] = useState();
@@ -154,9 +135,67 @@ const AdminCoursesComponent = () => {
     }
   };
 
+  const [isModalAddVisible, setIsModalAddVisible] = useState(false);
+  const [courseId, setCourseId] = useState();
+  const [urlVideos, setUrlVideos] = useState();
+  const onChangeVideo = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("video", file);
+      const result = await axios.post(
+        `http://localhost:4000/upload/videos`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setUrlVideos(result.data.url);
+    } catch (error) {
+      if (error.response) {
+        return message.error(error.response.data.message);
+      } else {
+        return message.error(error.message);
+      }
+    }
+  };
+
+  const onFinishAddContent = async (data) => {
+    if (urlVideos === undefined || courseId === undefined) {
+      return message.error(`Url video or Course Reference not found !`);
+    } else {
+      try {
+        const result = await axios.post(
+          `http://localhost:4000/contents/add`,
+          {
+            title: data.title,
+            description: data.description,
+            url: urlVideos,
+            course_id: courseId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + jwt,
+            },
+          }
+        );
+        if (result.status === 200) {
+          setIsModalAddVisible(false);
+          return message.success(result.data.message);
+        }
+      } catch (error) {
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
+      }
+    }
+  };
   useEffect(() => {
     getCourses();
-    getCategories();
   }, [pagination]);
   return (
     <div className="site-page-header-ghost-wrapper">
@@ -221,18 +260,14 @@ const AdminCoursesComponent = () => {
                       <td>{i.price}</td>
                       <td>{i.num_of_subscribers}</td>
                       <td>
-                        <Space size="middle">
-                          {i.status === true ? (
-                            <Button type="primary" danger>
-                              Block
-                            </Button>
-                          ) : (
-                            <Button type="primary" onClick={() => {}}>
-                              Active
-                            </Button>
-                          )}
-                          <Button onClick={() => {}}>Add Contents</Button>
-                        </Space>
+                        <Button
+                          onClick={() => {
+                            setIsModalAddVisible(true);
+                            setCourseId(i._id);
+                          }}
+                        >
+                          Add Content
+                        </Button>
                       </td>
                     </tr>
                   </>
@@ -369,6 +404,75 @@ const AdminCoursesComponent = () => {
         ) : (
           ""
         )}
+      </Modal>
+      <Modal
+        title="Add Content"
+        centered={true}
+        width={600}
+        visible={isModalAddVisible}
+        onCancel={() => {
+          setIsModalAddVisible(false);
+        }}
+        footer={null}
+      >
+        <Form
+          name="dynamic_form_nest_item"
+          onFinish={onFinishAddContent}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Title"
+            name={"title"}
+            rules={[
+              {
+                required: true,
+                message: "Missing title",
+              },
+            ]}
+          >
+            <Input placeholder="Title of lecture" />
+          </Form.Item>
+          <Form.Item
+            label="Description"
+            name={"description"}
+            rules={[
+              {
+                required: true,
+                message: "Missing description",
+              },
+            ]}
+          >
+            <Input placeholder="Description for lecture" />
+          </Form.Item>
+          <Form.Item
+            label="Video"
+            name={"video"}
+            rules={[
+              {
+                required: true,
+                message: "Missing video",
+              },
+            ]}
+          >
+            <Input
+              type="file"
+              onChange={(e) => {
+                onChangeVideo(e.target.files[0]);
+              }}
+              allowClear
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ marginLeft: 20, width: 100 }}
+            >
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );
