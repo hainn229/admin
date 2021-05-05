@@ -15,6 +15,7 @@ import {
   LikeOutlined,
   BookOutlined,
   SettingOutlined,
+  PayCircleOutlined,
 } from "@ant-design/icons";
 import { Router } from "./Router";
 import { useAuth } from "../hooks/useAuth";
@@ -86,11 +87,11 @@ export const Index = () => {
               <Link to={`/courses/admin`}>My Courses</Link>
             </Menu.Item>
           </SubMenu>
-          <Menu.Item key="5" icon={<LikeOutlined />}>
-            <Link to={`/comments`}>Comments</Link>
+          <Menu.Item key="5" icon={<PayCircleOutlined />}>
+            <Link to={`/transactions`}>Transactions</Link>
           </Menu.Item>
-          <Menu.Item key="6" icon={<ShoppingOutlined />} disabled>
-            <Link to={`/payments`}>Payments</Link>
+          <Menu.Item key="comments" icon={<LikeOutlined />}>
+            <Link to={`/comments`}>Comments</Link>
           </Menu.Item>
         </Menu>
       </Sider>

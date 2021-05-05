@@ -7,6 +7,7 @@ import { Courses } from "./Courses";
 import { AddCourse } from "./AddCourse";
 import { AdminCourses } from "./AdminCourses";
 import { Comments } from "./Comments";
+import { Transactions} from "./Transactions";
 
 export const Router = () => {
   return (
@@ -18,7 +19,7 @@ export const Router = () => {
       <Route path="/courses/admin" component={AdminCourses} />
       <Route path="/courses" component={Courses} />
       <Route path="/comemnts" component={Comments} />
-      {/* <Route path="/payments" component={Payments} /> */}
+      <Route path="/transactions" component={Transactions} />
     </Switch>
   );
 };
