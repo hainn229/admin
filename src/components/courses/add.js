@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "video-react/dist/video-react.css";
+import { getAllCategories, postAddCourse, uploadImage } from "../../APIs";
 import {
   message,
   PageHeader,
@@ -13,7 +14,6 @@ import {
   Select,
   Upload,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
 const { Option } = Select;
 const { TextArea } = Input;
 
@@ -42,15 +42,12 @@ export const AddCourseComponent = () => {
   });
 
   const [categoriesData, setCategoriesData] = useState([]);
-  const getCategories = async () => {
+  const getAllCategory = async () => {
     try {
-      const result = await axios.get(`http://localhost:4000/categories/all`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCategoriesData(result.data.categories);
+      const result = await getAllCategories();
+      if (result.status === 200) {
+        setCategoriesData(result.data.categories);
+      }
     } catch (error) {
       if (error.response) {
         return message.error(`${error.response.data.message}`);
@@ -65,16 +62,10 @@ export const AddCourseComponent = () => {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const result = await axios.post(
-        `http://localhost:4000/upload/images`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setUrlPoster(result.data.url);
+      const result = await uploadImage(formData);
+      if (result.status === 200) {
+        setUrlPoster(result.data.url);
+      }
     } catch (error) {
       if (error.response) {
         return message.error(error.response.data.message);
@@ -87,44 +78,34 @@ export const AddCourseComponent = () => {
       return message.warning(`Could not find poster!`);
     } else {
       try {
-        const result = await axios.post(
-          `http://localhost:4000/courses/add`,
-          {
-            course_title: data.title,
-            cat_id: data.cat_id,
-            level: data.level,
-            price: data.price,
-            description: data.description,
-            tutor: data.tutor,
-            status: false,
-            poster: urlPoster,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + jwt,
-            },
-          }
-        );
+        const result = await postAddCourse({
+          course_title: data.title,
+          cat_id: data.cat_id,
+          level: data.level,
+          price: data.price,
+          description: data.description,
+          tutor: data.tutor,
+          status: false,
+          poster: urlPoster,
+        })
         if (result.status === 200) {
           message.success(result.data.message);
           return window.history.go(`/courses`);
         }
       } catch (error) {
         if (error.response) {
-          return message.error(`${error.response.data.message}`);
+          return message.error(error.response.data.message);
         } else {
-          return message.error(`${error.message}`);
+          return message.error(error.message);
         }
       }
     }
   };
 
   useEffect(() => {
-    getCategories();
+    getAllCategory();
   }, [pagination]);
   return (
-    <div className="site-page-header-ghost-wrapper">
       <PageHeader
         ghost={true}
         onBack={() => window.history.back()}
@@ -267,6 +248,5 @@ export const AddCourseComponent = () => {
           </Form.Item>
         </Form>
       </PageHeader>
-    </div>
   );
 };

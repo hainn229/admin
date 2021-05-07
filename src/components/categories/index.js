@@ -5,6 +5,13 @@ import axios from "axios";
 import queryString from "querystring";
 import { Table } from "react-bootstrap";
 import {
+  deleteCategory,
+  getCategories,
+  getDetaisCategory,
+  postAddCategory,
+  putUpdateCategory,
+} from "../../APIs";
+import {
   Tag,
   Space,
   message,
@@ -12,20 +19,9 @@ import {
   Button,
   Modal,
   Input,
-  Select,
   Form,
   Popconfirm,
 } from "antd";
-
-const { Option } = Select;
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 16 },
-};
-const tailLayout = {
-  wrapperCol: { offset: 8, span: 16 },
-};
 
 const CategoriesComponent = () => {
   const jwt = localStorage.getItem("token");
@@ -36,19 +32,13 @@ const CategoriesComponent = () => {
     keywords: "",
   });
   const [listCategories, setListCategories] = useState([]);
-  const getCategories = async () => {
+  const getCategoriesWithPages = async () => {
     try {
       const keys = queryString.stringify(pagination);
-      const results = await axios.get(
-        `http://localhost:4000/categories?${keys}`,
-        {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      setListCategories(results.data.categories.docs);
+      const results = await getCategories(keys);
+      if (results.status === 200) {
+        setListCategories(results.data.categories.docs);
+      }
     } catch (error) {
       if (error.response) {
         return message.error(`${error.response.data.message}`);
@@ -65,22 +55,13 @@ const CategoriesComponent = () => {
   const [isModalAddVisible, setIsModalAddVisible] = useState(false);
   const onFinishAdd = async (data) => {
     try {
-      const result = await axios.post(
-        `http://localhost:4000/categories/add`,
-        {
-          cat_name: data.cat_name,
-        },
-        {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await postAddCategory({
+        cat_name: data.cat_name,
+      });
       if (result.status === 200) {
         setIsModalAddVisible(false);
         setActions(!action);
-        return message.success(`Add New Category Successfully !`);
+        return message.success(result.data.message);
       }
     } catch (error) {
       if (error.response) {
@@ -95,33 +76,22 @@ const CategoriesComponent = () => {
   const [categoryEdit, setCategoryEdit] = useState();
   const getCategoryEdit = async (id) => {
     try {
-      const result = await axios.get(`http://localhost:4000/categories/${id}`, {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCategoryEdit(result.data.category);
+      const result = await getDetaisCategory(id);
+      if (result.status === 200) {
+        setCategoryEdit(result.data.category);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
 
   const onConfirmDelete = async (id) => {
     try {
-      const result = await axios.delete(
-        `http://localhost:4000/categories/${id}`,
-        {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await deleteCategory(id);
       if (result.status === 200) {
         setActions(!action);
         return message.success(result.data.message);
@@ -136,10 +106,10 @@ const CategoriesComponent = () => {
   };
 
   useEffect(() => {
-    getCategories();
+    getCategoriesWithPages();
   }, [pagination, action]);
   return (
-    <div className="site-page-header-ghost-wrapper">
+    <>
       <PageHeader
         ghost={true}
         onBack={() => window.history.back()}
@@ -267,22 +237,13 @@ const CategoriesComponent = () => {
               name="control-hooks"
               onFinish={async (data) => {
                 try {
-                  const result = await axios.put(
-                    `http://localhost:4000/categories/${categoryEdit._id}`,
-                    {
-                      cat_name: data.cat_name,
-                    },
-                    {
-                      headers: {
-                        "content-type": "application/json",
-                        Authorization: "Bearer " + jwt,
-                      },
-                    }
-                  );
+                  const result = await putUpdateCategory(categoryEdit._id, {
+                    cat_name: data.cat_name,
+                  });
                   if (result.status === 200) {
                     setIsModalEditVisible(false);
                     setActions(!action);
-                    return message.success(`Update category success !`);
+                    return message.success(result.data.message);
                   }
                 } catch (error) {
                   if (error.response) {
@@ -324,7 +285,7 @@ const CategoriesComponent = () => {
           ""
         )}
       </Modal>
-    </div>
+    </>
   );
 };
 export default CategoriesComponent;

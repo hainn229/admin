@@ -12,7 +12,7 @@ import {
   HomeOutlined,
   UnorderedListOutlined,
   ShoppingOutlined,
-  LikeOutlined,
+  MessageOutlined,
   BookOutlined,
   SettingOutlined,
   PayCircleOutlined,
@@ -90,7 +90,10 @@ export const Index = () => {
           <Menu.Item key="5" icon={<PayCircleOutlined />}>
             <Link to={`/transactions`}>Transactions</Link>
           </Menu.Item>
-          <Menu.Item key="comments" icon={<LikeOutlined />}>
+          <Menu.Item key="6" icon={<ShoppingOutlined />}>
+            <Link to={`/orders`}>Orders</Link>
+          </Menu.Item>
+          <Menu.Item key="comments" icon={<MessageOutlined />} disabled>
             <Link to={`/comments`}>Comments</Link>
           </Menu.Item>
         </Menu>

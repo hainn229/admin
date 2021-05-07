@@ -1,9 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import queryString from "querystring";
 import { Link } from "react-router-dom";
 import { Table } from "react-bootstrap";
+import {
+  deleteUser,
+  getDetailsUser,
+  getUsersWithPage,
+  postSignUp,
+  putUpdateUser,
+} from "../../APIs";
 import {
   Tag,
   Space,
@@ -31,7 +37,6 @@ const formStyle = {
   },
 };
 const UsersComponent = () => {
-  const jwt = localStorage.getItem("token");
   const [form] = Form.useForm();
   const onReset = () => {
     form.resetFields();
@@ -45,15 +50,16 @@ const UsersComponent = () => {
   const getUsers = async () => {
     try {
       const keys = queryString.stringify(pagination);
-      const results = await axios.get(`http://localhost:4000/users?${keys}`, {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setListUsers(results.data.users.docs);
+      const results = await getUsersWithPage(keys);
+      if (results.status === 200) {
+        setListUsers(results.data.users.docs);
+      }
     } catch (error) {
-      return message.error(error.message);
+      if (error.response) {
+        return message.error(error.response.data.message);
+      } else {
+        return message.error(error.message);
+      }
     }
   };
 
@@ -62,86 +68,55 @@ const UsersComponent = () => {
 
   const onFinishAdd = async (dataInput) => {
     try {
-      const result = await axios.post(
-        `http://localhost:4000/auth/register`,
-        {
-          full_name: dataInput.full_name,
-          email: dataInput.email,
-          password: dataInput.password,
-          amount: dataInput.amount,
-          role: dataInput.role,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await postSignUp({
+        full_name: dataInput.full_name,
+        email: dataInput.email,
+        password: dataInput.password,
+        amount: dataInput.amount,
+        role: dataInput.role,
+      });
       if (result.status === 200) {
         setIsModalVisible(false);
         setActions(!action);
+        return message.success(result.data.message);
       }
-      return message.success(`${result.data.message}`);
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
 
   const onLock = async (userId) => {
     try {
-      const result = await axios.put(
-        `http://localhost:4000/auth/${userId}`,
-        {
-          status: false,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await putUpdateUser(userId, { status: false });
       if (result.status === 200) {
         setActions(!action);
         return message.success(`User have been locked!`);
       }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
 
   const onUnlock = async (userId) => {
     try {
-      const result = await axios.put(
-        `http://localhost:4000/auth/${userId}`,
-        {
-          status: true,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await putUpdateUser(userId, { status: true });
       if (result.status === 200) {
         setActions(!action);
         return message.success(`Unlock user have been success!`);
       }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -151,42 +126,31 @@ const UsersComponent = () => {
 
   const getUserInfo = async (userId) => {
     try {
-      const result = await axios.get(`http://localhost:4000/auth/${userId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setUserInfo(result.data.info);
+      const result = await getDetailsUser(userId);
+      if (result.status === 200) {
+        setUserInfo(result.data.info);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
 
   const onConfirmDelete = async (userId) => {
     try {
-      const result = await axios.delete(
-        `http://localhost:4000/auth/${userId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await deleteUser(userId);
       if (result.status === 200) {
         setActions(!action);
         return message.success(result.data.message);
       }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -195,7 +159,7 @@ const UsersComponent = () => {
     getUsers();
   }, [pagination, action]);
   return (
-    <div className="site-page-header-ghost-wrapper">
+    <>
       <PageHeader
         ghost={true}
         onBack={() => window.history.back()}
@@ -330,7 +294,7 @@ const UsersComponent = () => {
         )}
       </PageHeader>
       <Modal
-      title="Add New User"
+        title="Add New User"
         centered={true}
         width={600}
         visible={isModalVisible}
@@ -536,7 +500,7 @@ const UsersComponent = () => {
           ""
         )}
       </Modal>
-    </div>
+    </>
   );
 };
 export default UsersComponent;

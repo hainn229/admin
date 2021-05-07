@@ -3,6 +3,7 @@ import React from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "../hooks/useAuth";
+import { postSignIn } from "../APIs";
 import { Form, Input, Button, Layout, message, Image, Row } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 const { Content, Footer } = Layout;
@@ -13,19 +14,7 @@ const LoginComponent = () => {
   const jwt = localStorage.getItem("token");
   const onFinish = async (dataSignIn) => {
     try {
-      const result = await axios.post(
-        `http://localhost:4000/auth/login`,
-        {
-          email: dataSignIn.email,
-          password: dataSignIn.password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await postSignIn(dataSignIn);
       if (result.data) {
         if (result.data.user.role === "USER") {
           return message.error(

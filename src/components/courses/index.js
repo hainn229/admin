@@ -7,6 +7,14 @@ import { Player, BigPlayButton } from "video-react";
 import "video-react/dist/video-react.css";
 import { Link } from "react-router-dom";
 import {
+  getAllCategories,
+  getCourses,
+  getDetailsCourse,
+  getCourseWithContents,
+  putUpdateCourse,
+  getDetailsContent
+} from "../../APIs";
+import {
   Tag,
   Space,
   message,
@@ -39,21 +47,18 @@ const CoursesComponent = () => {
     inputValue: 1,
   });
   const [listCourses, setListCourses] = useState([]);
-  const getCourses = async () => {
+  const getCoursesWithPage = async () => {
     try {
       const keys = queryString.stringify(pagination);
-      const results = await axios.get(`http://localhost:4000/courses?${keys}`, {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setListCourses(results.data.courses.docs);
+      const results = await getCourses(keys);
+      if (results.status === 200) {
+        setListCourses(results.data.courses.docs);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -61,18 +66,15 @@ const CoursesComponent = () => {
   const [categoriesData, setCategoriesData] = useState([]);
   const getCategories = async () => {
     try {
-      const result = await axios.get(`http://localhost:4000/categories/all`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCategoriesData(result.data.categories);
+      const result = await getAllCategories();
+      if (result.status === 200) {
+        setCategoriesData(result.data.categories);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -82,25 +84,19 @@ const CoursesComponent = () => {
   const [contentOfCourse, setContentOfCourse] = useState();
   const getCourseInfo = async (id) => {
     try {
-      const result1 = await axios.get(`http://localhost:4000/courses/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCourseInfo(result1.data.course);
-      const result2 = await axios.get(`http://localhost:4000/contents/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setContentOfCourse(result2.data.contents);
+      const result1 = await getDetailsCourse(id);
+      if (result1.status === 200) {
+        setCourseInfo(result1.data.course);
+      }
+      const result2 = await getCourseWithContents(id);
+      if (result2.status === 200) {
+        setContentOfCourse(result2.data.contents);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -109,74 +105,51 @@ const CoursesComponent = () => {
   const [contentDetails, setContentDetails] = useState();
   const getContentInfo = async (id) => {
     try {
-      const result = await axios.get(
-        `http://localhost:4000/contents/details/${id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      setContentDetails(result.data.content);
+      const result = await getDetailsContent(id);
+      if (result.status === 200) {
+        setContentDetails(result.data.content);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
   const [actions, setActions] = useState(false);
   const onBlock = async (id) => {
     try {
-      const result = await axios.put(
-        `http://localhost:4000/courses/${id}`,
-        {
-          status: false,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await putUpdateCourse(id, {
+        status: false,
+      });
+
       if (result.status === 200) {
         setActions(!actions);
         return message.success(result.data.message);
       }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
   const onActive = async (id) => {
     try {
-      const result = await axios.put(
-        `http://localhost:4000/courses/${id}`,
-        {
-          status: true,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await putUpdateCourse(id, {
+        status: true,
+      });
       if (result.status === 200) {
         setActions(!actions);
         return message.success(result.data.message);
       }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -186,10 +159,10 @@ const CoursesComponent = () => {
   }, [pagination]);
 
   useEffect(() => {
-    getCourses();
+    getCoursesWithPage();
   }, [pagination, actions]);
   return (
-    <div className="site-page-header-ghost-wrapper">
+    <>
       <PageHeader
         ghost={true}
         onBack={() => window.history.back()}
@@ -521,7 +494,7 @@ const CoursesComponent = () => {
           ""
         )}
       </Modal>
-    </div>
+    </>
   );
 };
 export default CoursesComponent;

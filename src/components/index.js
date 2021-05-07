@@ -6,6 +6,19 @@ import queryString from "querystring";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Player, BigPlayButton } from "video-react";
+import {
+  getAllCategories,
+  getAllComments,
+  getAllCourses,
+  getAllOrders,
+  getAllTransactions,
+  getAllUsers,
+  getCoursesPending,
+  getCourseWithContents,
+  getDetailsCourse,
+  getDetailsContent,
+  putUpdateCourse,
+} from "../APIs";
 
 import { Table } from "react-bootstrap";
 import {
@@ -53,17 +66,16 @@ const DashboardComponent = () => {
   const getTotalCourses = async () => {
     if (user.email) {
       try {
-        const result = await axios.get(`http://localhost:4000/courses/all`, {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        });
+        const result = await getAllCourses();
         if (result.status === 200) {
           setTotalCourses(result.data.courses.length);
         }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
@@ -71,51 +83,48 @@ const DashboardComponent = () => {
   const getTotalCategories = async () => {
     if (user.email) {
       try {
-        const result = await axios.get(`http://localhost:4000/categories/all`, {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        });
+        const result = await getAllCategories();
         if (result.status === 200) {
           setTotalCategories(result.data.categories.length);
         }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
   const getTotalUsers = async () => {
     if (user.email) {
       try {
-        const result = await axios.get(`http://localhost:4000/users/all`, {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        });
+        const result = await getAllUsers();
         if (result.status === 200) {
           setTotalUsers(result.data.users.length);
         }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
   const getTotalComments = async () => {
     if (user.email) {
       try {
-        const result = await axios.get(`http://localhost:4000/comments`, {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        });
+        const result = await getAllComments();
         if (result.status === 200) {
           setTotalComments(result.data.comments.length);
         }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
@@ -123,17 +132,16 @@ const DashboardComponent = () => {
   const getTotalTransactions = async () => {
     if (user.email) {
       try {
-        const result = await axios.get(`http://localhost:4000/transactions`, {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        });
+        const result = await getAllTransactions();
         if (result.status === 200) {
           setTotalTransactions(result.data.transactions.totalItems);
         }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
@@ -141,17 +149,16 @@ const DashboardComponent = () => {
   const getTotalOrders = async () => {
     if (user.email) {
       try {
-        const result = await axios.get(`http://localhost:4000/orders`, {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        });
+        const result = await getAllOrders();
         if (result.status === 200) {
           setTotalOrders(result.data.totalItems);
         }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
@@ -166,22 +173,20 @@ const DashboardComponent = () => {
   }, []);
 
   const [listCoursesPending, setListCoursesPending] = useState([]);
-  const getCoursesPending = async () => {
+  const getPendingCourses = async () => {
     if (user.email) {
       try {
         const keys = queryString.stringify(pagination);
-        const results = await axios.get(
-          `http://localhost:4000/courses/pending?${keys}`,
-          {
-            headers: {
-              "Content-type": "application/json",
-              Authorization: "Bearer " + jwt,
-            },
-          }
-        );
-        setListCoursesPending(results.data.courses.docs);
+        const results = await getCoursesPending(keys);
+        if (results.status === 200) {
+          setListCoursesPending(results.data.courses.docs);
+        }
       } catch (error) {
-        return message.error(error.message);
+        if (error.response) {
+          return message.error(error.response.data.message);
+        } else {
+          return message.error(error.message);
+        }
       }
     }
   };
@@ -191,25 +196,19 @@ const DashboardComponent = () => {
   const [contentOfCourse, setContentOfCourse] = useState();
   const getCourseInfo = async (id) => {
     try {
-      const result1 = await axios.get(`http://localhost:4000/courses/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCourseInfo(result1.data.course);
-      const result2 = await axios.get(`http://localhost:4000/contents/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setContentOfCourse(result2.data.contents);
+      const result1 = await getDetailsCourse(id);
+      if (result1.status === 200) {
+        setCourseInfo(result1.data.course);
+      }
+      const result2 = await getCourseWithContents(id);
+      if (result2.status === 200) {
+        setContentOfCourse(result2.data.contents);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -218,21 +217,15 @@ const DashboardComponent = () => {
   const [contentDetails, setContentDetails] = useState();
   const getContentInfo = async (id) => {
     try {
-      const result = await axios.get(
-        `http://localhost:4000/contents/details/${id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      setContentDetails(result.data.content);
+      const result = await getDetailsContent(id);
+      if (result.status === 200) {
+        setContentDetails(result.data.content);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -240,36 +233,27 @@ const DashboardComponent = () => {
   const [actions, setActions] = useState(false);
   const onActive = async (id) => {
     try {
-      const result = await axios.put(
-        `http://localhost:4000/courses/${id}`,
-        {
-          status: true,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
+      const result = await putUpdateCourse(id, {
+        status: true,
+      });
       if (result.status === 200) {
         setActions(!actions);
         return message.success(result.data.message);
       }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
 
   useEffect(() => {
-    getCoursesPending();
+    getPendingCourses();
   }, [pagination, user._id, actions]);
   return (
-    <div className="space-align-block">
+    <>
       <Row gutter={16}>
         <Col span={8}>
           <Statistic
@@ -502,7 +486,7 @@ const DashboardComponent = () => {
           ""
         )}
       </Modal>
-    </div>
+    </>
   );
 };
 

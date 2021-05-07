@@ -1,57 +1,40 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import queryString from "querystring";
 import { Player, BigPlayButton } from "video-react";
 import "video-react/dist/video-react.css";
-import { Link, Redirect } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Tag,
-  Space,
   message,
   PageHeader,
   Button,
   Input,
-  Checkbox,
-  Layout,
-  Menu,
-  Slider,
-  InputNumber,
   Row,
   Col,
   Avatar,
   Modal,
   List,
   Form,
-  Select,
-  Upload,
-  Divider,
 } from "antd";
-import {
-  BookOutlined,
-  UserOutlined,
-  UploadOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { BookOutlined, UserOutlined } from "@ant-design/icons";
 import { Table } from "react-bootstrap";
-const { Search, TextArea } = Input;
-const { Option } = Select;
-
-const formStyle = {
-  labelCol: { span: 4, style: { textAlign: "left" } },
-  wrapperCol: {
-    span: 20,
-    style: { marginLeft: 20, marginTop: 10, width: "100%" },
-  },
-};
+import {
+  getCoursesAdmin,
+  getCourseWithContents,
+  getDetailsCourse,
+  getDetailsContent,
+  uploadVideo,
+  postAddContent,
+} from "../../APIs";
+const { Search } = Input;
 
 const AdminCoursesComponent = () => {
-  const jwt = localStorage.getItem("token");
-  // const [form] = Form.useForm();
-  // const onReset = () => {
-  //   form.resetFields();
-  // };
+  const [form1] = Form.useForm();
+  const onReset = () => {
+    form1.resetFields();
+  };
   const [pagination, setPagination] = useState({
     currentPage: 1,
     limitPage: 10,
@@ -65,16 +48,10 @@ const AdminCoursesComponent = () => {
   const getCourses = async () => {
     try {
       const keys = queryString.stringify(pagination);
-      const results = await axios.get(
-        `http://localhost:4000/courses/admin?${keys}`,
-        {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      setListCourses(results.data.courses.docs);
+      const results = await getCoursesAdmin(keys);
+      if (results.status === 200) {
+        setListCourses(results.data.courses.docs);
+      }
     } catch (error) {
       if (error.response) {
         return message.error(`${error.response.data.message}`);
@@ -89,25 +66,19 @@ const AdminCoursesComponent = () => {
   const [contentOfCourse, setContentOfCourse] = useState();
   const getCourseInfo = async (id) => {
     try {
-      const result1 = await axios.get(`http://localhost:4000/courses/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setCourseInfo(result1.data.course);
-      const result2 = await axios.get(`http://localhost:4000/contents/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + jwt,
-        },
-      });
-      setContentOfCourse(result2.data.contents);
+      const result1 = await getDetailsCourse(id);
+      if (result1.status === 200) {
+        setCourseInfo(result1.data.course);
+      }
+      const result2 = await getCourseWithContents(id);
+      if (result2.status === 200) {
+        setContentOfCourse(result2.data.contents);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -116,21 +87,15 @@ const AdminCoursesComponent = () => {
   const [contentDetails, setContentDetails] = useState();
   const getContentInfo = async (id) => {
     try {
-      const result = await axios.get(
-        `http://localhost:4000/contents/details/${id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + jwt,
-          },
-        }
-      );
-      setContentDetails(result.data.content);
+      const result = await getDetailsContent(id);
+      if (result.status === 200) {
+        setContentDetails(result.data.content);
+      }
     } catch (error) {
       if (error.response) {
-        return message.error(`${error.response.data.message}`);
+        return message.error(error.response.data.message);
       } else {
-        return message.error(`${error.message}`);
+        return message.error(error.message);
       }
     }
   };
@@ -142,16 +107,10 @@ const AdminCoursesComponent = () => {
     try {
       const formData = new FormData();
       formData.append("video", file);
-      const result = await axios.post(
-        `http://localhost:4000/upload/videos`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setUrlVideos(result.data.url);
+      const result = await uploadVideo(formData);
+      if (result.status === 200) {
+        setUrlVideos(result.data.url);
+      }
     } catch (error) {
       if (error.response) {
         return message.error(error.response.data.message);
@@ -166,21 +125,12 @@ const AdminCoursesComponent = () => {
       return message.error(`Url video or Course Reference not found !`);
     } else {
       try {
-        const result = await axios.post(
-          `http://localhost:4000/contents/add`,
-          {
-            title: data.title,
-            description: data.description,
-            url: urlVideos,
-            course_id: courseId,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + jwt,
-            },
-          }
-        );
+        const result = await postAddContent({
+          title: data.title,
+          description: data.description,
+          url: urlVideos,
+          course_id: courseId,
+        });
         if (result.status === 200) {
           setIsModalAddVisible(false);
           return message.success(result.data.message);
@@ -198,7 +148,7 @@ const AdminCoursesComponent = () => {
     getCourses();
   }, [pagination]);
   return (
-    <div className="site-page-header-ghost-wrapper">
+    <>
       <PageHeader
         ghost={true}
         onBack={() => window.history.back()}
@@ -416,6 +366,7 @@ const AdminCoursesComponent = () => {
         footer={null}
       >
         <Form
+          form={form1}
           name="dynamic_form_nest_item"
           onFinish={onFinishAddContent}
           autoComplete="off"
@@ -471,10 +422,17 @@ const AdminCoursesComponent = () => {
             >
               Submit
             </Button>
+            <Button
+              htmlType="button"
+              style={{ marginLeft: 20, width: 100 }}
+              onClick={onReset}
+            >
+              Reset
+            </Button>
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 };
 export default AdminCoursesComponent;
