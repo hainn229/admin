@@ -44,7 +44,6 @@ import {
 } from "@ant-design/icons";
 
 const DashboardComponent = () => {
-  const jwt = localStorage.getItem("token");
   const user = useSelector((state) => {
     return state.signInReducer.data;
   });
@@ -170,7 +169,7 @@ const DashboardComponent = () => {
     getTotalComments();
     getTotalTransactions();
     getTotalOrders();
-  }, []);
+  }, [user]);
 
   const [listCoursesPending, setListCoursesPending] = useState([]);
   const getPendingCourses = async () => {

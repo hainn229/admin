@@ -12,7 +12,7 @@ import {
   getDetailsCourse,
   getCourseWithContents,
   putUpdateCourse,
-  getDetailsContent
+  getDetailsContent,
 } from "../../APIs";
 import {
   Tag,
@@ -41,7 +41,7 @@ const CoursesComponent = () => {
     currentPage: 1,
     limitPage: 10,
     keywords: "",
-    category: "",
+    category: [],
     level: [],
     tutor_id: "",
     inputValue: 1,
@@ -210,7 +210,29 @@ const CoursesComponent = () => {
               </Col>
             </Row>
           </Checkbox.Group>
+          <hr />
           <Row>
+            <h6>Filter by Category:</h6>
+          </Row>
+          <List
+            dataSource={categoriesData}
+            renderItem={(item) => (
+              <Checkbox.Group
+                style={{ width: "100%" }}
+                onChange={(event) => {
+                  setPagination({
+                    ...pagination,
+                    category: event,
+                  });
+                }}
+              >
+                <Col span={6}>
+                  <Checkbox value={item._id}>{item.cat_name}</Checkbox>
+                </Col>
+              </Checkbox.Group>
+            )}
+          />
+          {/* <Row>
             <h6>Filter by Status:</h6>
           </Row>
           <Checkbox.Group
@@ -289,7 +311,7 @@ const CoursesComponent = () => {
               </Col>
             </Row>
           </Checkbox.Group>
-          <br />
+          <br /> */}
         </div>
 
         <div style={{ backgroundColor: "white", padding: 20 }}>
@@ -326,9 +348,19 @@ const CoursesComponent = () => {
                       <td>{i.level}</td>
                       <td>
                         {i.status === true ? (
-                          <Tag color="green">Active</Tag>
+                          <Tag
+                            style={{ width: 70, textAlign: "center" }}
+                            color="green"
+                          >
+                            Active
+                          </Tag>
                         ) : (
-                          <Tag color="red">Pending</Tag>
+                          <Tag
+                            style={{ width: 70, textAlign: "center" }}
+                            color="red"
+                          >
+                            Pending
+                          </Tag>
                         )}
                       </td>
                       <td>{i.price}</td>
@@ -342,7 +374,11 @@ const CoursesComponent = () => {
                               okText="Yes"
                               cancelText="No"
                             >
-                              <Button type="primary" danger>
+                              <Button
+                                style={{ width: 70, textAlign: "center" }}
+                                type="primary"
+                                danger
+                              >
                                 Block
                               </Button>
                             </Popconfirm>
@@ -353,7 +389,12 @@ const CoursesComponent = () => {
                               okText="Yes"
                               cancelText="No"
                             >
-                              <Button type="primary">Active</Button>
+                              <Button
+                                style={{ width: 70, textAlign: "center" }}
+                                type="primary"
+                              >
+                                Active
+                              </Button>
                             </Popconfirm>
                           )}
                         </Space>

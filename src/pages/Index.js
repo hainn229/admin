@@ -47,7 +47,7 @@ export const Index = () => {
             style={{
               color: "white",
               marginTop: 16,
-              fontSize: 20,
+              fontSize: 40,
               textAlign: "center",
             }}
           >
@@ -58,11 +58,11 @@ export const Index = () => {
             style={{
               color: "white",
               marginTop: 16,
-              fontSize: 20,
+              fontSize: 40,
               textAlign: "center",
             }}
           >
-            Adminstrators
+            Admin
           </h1>
         )}
 
@@ -128,7 +128,7 @@ export const Index = () => {
                 marginRight: 10,
               }}
             >
-              <SettingOutlined /> Admin
+              <SettingOutlined /> Adminstrator
             </Button>
           </Dropdown>
         </Header>
